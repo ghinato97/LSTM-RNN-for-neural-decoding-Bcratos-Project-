@@ -31,16 +31,16 @@ logging.basicConfig(
 #         return 25
 #     return id
 
-def Prepare_Dataset(dirpath,img_id,hold,rew):
-    global c,y,yy,label
+def Prepare_Dataset(dirpath,df):
     lookback=8
     x=[]
     att=[]
     no_att=[]
-    for im in img_id:
-        s=str(int(im))
+    
+    for idx,row in df.iterrows():
+        s=str(int(row['img_id']))
         stringa='img_'+s
-        # print(stringa)
+        print(stringa)
         filepath=os.path.join(dirpath,stringa)
         binned_spk=np.load(filepath)
         np_matrix = binned_spk['arr_0']
@@ -49,7 +49,7 @@ def Prepare_Dataset(dirpath,img_id,hold,rew):
             t=[]
             for j in range(0,lookback):
                 t.append(np_matrix[:,[(i+j)]])
-            if (i+lookback)>=hold[im] and (i+lookback)<rew[im]:
+            if (i+lookback)>=row['Hold'] and (i+lookback)<row['Rew']:
                  att.append(1)  # 1 è quando c'è Hold 
                  no_att.append(0)
                  
@@ -58,6 +58,7 @@ def Prepare_Dataset(dirpath,img_id,hold,rew):
                  no_att.append(1) #0 è quando non c'è Hold
                   
             x.append(t)
+            
     y=np.array(no_att)
     yy=np.array(att)
     label=np.ones((yy.shape[0],2))
@@ -65,6 +66,7 @@ def Prepare_Dataset(dirpath,img_id,hold,rew):
     label[:,1]=yy
     data_set = somma_canali(x)
     data_set=np.array(data_set) # dimensionalmente [bin_in_considerazione,bin_precedenti,somma_sui_canali]
+
     
     return data_set,label
 
@@ -84,12 +86,18 @@ def somma_canali(x):
 
 
 
-def prepare_mask_dataset(binned_samples_df):
-    df_mask_train, df_mask_test = train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
-    df_mask_train=df_mask_train['img_id']
-    df_mask_test=df_mask_test['img_id']
-    return df_mask_train, df_mask_test
 
+def Hold_Rew(mask_train,mask_test,hold,rew):
+    hold_train=[]
+    rew_train=[]
+    hold_test=[]
+    rew_test=[]
+    
+    for i in range(mask_train.shape[0]):
+        hold_train.append(int(mask_train.iloc[i]))
+    return hold_train
+    
+    
     
   
     
@@ -120,7 +128,7 @@ if __name__=="__main__":
     rew=binned_samples_df['Rew']
     img=binned_samples_df['img_id']
     
-    mask_train,mask_test=prepare_mask_dataset(binned_samples_df)
-    train_set,label_train=Prepare_Dataset(args.dataset,mask_train,hold,rew)
-    test_set,label_test=Prepare_Dataset(args.dataset,mask_test,hold,rew)
+    train_df,test_df=train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
+    train_set,label_train=Prepare_Dataset(args.dataset,train_df)
+    test_set,label_test=Prepare_Dataset(args.dataset,test_df)
 

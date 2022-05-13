@@ -40,7 +40,6 @@ def Prepare_Dataset(dirpath,df):
     for idx,row in df.iterrows():
         s=str(int(row['img_id']))
         stringa='img_'+s
-        print(stringa)
         filepath=os.path.join(dirpath,stringa)
         binned_spk=np.load(filepath)
         np_matrix = binned_spk['arr_0']

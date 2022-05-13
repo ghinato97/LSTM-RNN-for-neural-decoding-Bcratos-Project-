@@ -37,9 +37,9 @@ if __name__=="__main__":
     rew=binned_samples_df['Rew']
     img=binned_samples_df['img_id']
     
-    mask_train,mask_test=prepare_mask_dataset(binned_samples_df)
-    train_set,label_train=Prepare_Dataset(args.dataset,mask_train,hold,rew)
-    test_set,label_test=Prepare_Dataset(args.dataset,mask_test,hold,rew)
+    train_df,test_df=train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
+    train_set,label_train=Prepare_Dataset(args.dataset,train_df)
+    test_set,label_test=Prepare_Dataset(args.dataset,test_df)
 
 
 

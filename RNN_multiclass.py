@@ -1,5 +1,5 @@
 # from bin_slit_data_sum import *
-from bin_slit_data_sum import *
+from bin_slit_data_sum_n_classes import *
 import math 
 from sklearn.preprocessing import MinMaxScaler
 from keras import Sequential,optimizers
@@ -45,11 +45,11 @@ if __name__=="__main__":
 
     print('\n')
     model = Sequential()
-    model.add(LSTM(units=50, return_sequences= True, input_shape=(train_set.shape[1],train_set.shape[2])))
-    model.add(LSTM(units=50, return_sequences=True))
-    model.add(LSTM(units=50))
+    model.add(LSTM(units=30, return_sequences= True, input_shape=(train_set.shape[1],train_set.shape[2])))
+    model.add(LSTM(units=30, return_sequences=True))
+    model.add(LSTM(units=30))
     # model.add(Dropout(.5))
-    model.add(Dense(2, activation="softmax"))
+    model.add(Dense(label_train.shape[1], activation="softmax"))
     model.summary()
     
     # optimizer = optimizers.Adam(learning_rate=0.0001)
@@ -67,3 +67,4 @@ if __name__=="__main__":
     #confusion matrix
     
     cm = confusion_matrix(label_test,predicted_value)
+

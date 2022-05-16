@@ -31,15 +31,15 @@ logging.basicConfig(
 #         return 25
 #     return id
 
-def Prepare_Dataset(dirpath,img_id,hold,rew):
-    global np_matrix,t
+def Prepare_Dataset(dirpath,df):
     lookback=8
     x=[]
-    y=[]
-    for im in img_id:
-        s=str(int(im))
+    att=[]
+    no_att=[]
+    
+    for idx,row in df.iterrows():
+        s=str(int(row['img_id']))
         stringa='img_'+s
-        # print(stringa)
         filepath=os.path.join(dirpath,stringa)
         binned_spk=np.load(filepath)
         np_matrix = binned_spk['arr_0']
@@ -47,19 +47,27 @@ def Prepare_Dataset(dirpath,img_id,hold,rew):
         for i in range(np_matrix.shape[1]-lookback-1):
             t=[]
             for j in range(0,lookback):
-                n=np_matrix[:,[(i+j)]]
-                t.append(n)
-            if (i+lookback)>=hold[im] and (i+lookback)<rew[im]:
-                 y.append(1)  # 1 è quando c'è Hold 
+                t.append(np_matrix[:,[(i+j)]])
+            if (i+lookback)>=row['Hold'] and (i+lookback)<row['Rew']:
+                 att.append(1)  # 1 è quando c'è Hold 
+                 no_att.append(0)
+                 
             else:
-                 y.append(0)  #0 è quando non c'è Hold
+                 att.append(0) 
+                 no_att.append(1) #0 è quando non c'è Hold
                   
             x.append(t)
-    y=np.array(y)
-    data_set=np.array(x) # dimensionalmente [bin_in_considerazione,bin_precedenti,somma_sui_canali]
-    data_set=np.reshape(data_set,(data_set.shape[0],data_set.shape[1],data_set.shape[2]))
+            
+    y=np.array(no_att)
+    yy=np.array(att)
+    label=np.ones((yy.shape[0],2))
+    label[:,0]=y
+    label[:,1]=yy
+    data_set = somma_canali(x)
+    data_set=np.array(data_set) # dimensionalmente [bin_in_considerazione,bin_precedenti,somma_sui_canali]
+
     
-    return data_set,y
+    return data_set,label
 
 
 def somma_canali(x):
@@ -77,12 +85,18 @@ def somma_canali(x):
 
 
 
-def prepare_mask_dataset(binned_samples_df):
-    df_mask_train, df_mask_test = train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
-    df_mask_train=df_mask_train['img_id']
-    df_mask_test=df_mask_test['img_id']
-    return df_mask_train, df_mask_test
 
+def Hold_Rew(mask_train,mask_test,hold,rew):
+    hold_train=[]
+    rew_train=[]
+    hold_test=[]
+    rew_test=[]
+    
+    for i in range(mask_train.shape[0]):
+        hold_train.append(int(mask_train.iloc[i]))
+    return hold_train
+    
+    
     
   
     
@@ -113,7 +127,6 @@ if __name__=="__main__":
     rew=binned_samples_df['Rew']
     img=binned_samples_df['img_id']
     
-    mask_train,mask_test=prepare_mask_dataset(binned_samples_df)
-    train_set,label_train=Prepare_Dataset(args.dataset,mask_train,hold,rew)
-    test_set,label_test=Prepare_Dataset(args.dataset,mask_test,hold,rew)
-
+    train_df,test_df=train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
+    train_set,label_train=Prepare_Dataset(args.dataset,train_df)
+    test_set,label_test=Prepare_Dataset(args.dataset,test_df)

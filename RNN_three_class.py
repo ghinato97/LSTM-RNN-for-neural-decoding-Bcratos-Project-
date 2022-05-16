@@ -1,5 +1,5 @@
 # from bin_slit_data_sum import *
-from bin_slit_data_sum import *
+from bin_slit_data_sum_three_class import *
 import math 
 from sklearn.preprocessing import MinMaxScaler
 from keras import Sequential,optimizers
@@ -49,7 +49,7 @@ if __name__=="__main__":
     model.add(LSTM(units=50, return_sequences=True))
     model.add(LSTM(units=50))
     # model.add(Dropout(.5))
-    model.add(Dense(2, activation="softmax"))
+    model.add(Dense(3, activation="softmax"))
     model.summary()
     
     # optimizer = optimizers.Adam(learning_rate=0.0001)

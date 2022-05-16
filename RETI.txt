@@ -1,0 +1,34 @@
+model = keras.models.Sequential()
+model.add(keras.layers.Flatten(input_shape=[28, 28])) 
+model.add(keras.layers.Dense(300, activation="relu")) #hidden layer 1
+model.add(keras.layers.Dense(100, activation="relu")) #hidden layer 2
+model.add(keras.layers.Dense(10, activation="softmax")) #output layer
+
+DEEP CNN
+
+model = keras.models.Sequential([
+keras.layers.Conv2D(64, 7, activation="relu", padding="same",
+input_shape=[28, 28, 1]), #64 filtri larghi 7x7
+keras.layers.MaxPooling2D(2), # divide le dimensioni spaziali di 2
+keras.layers.Conv2D(128, 3, activation="relu", padding="same"), #128 filtri larghi 3x3
+keras.layers.Conv2D(128, 3, activation="relu", padding="same"),
+keras.layers.MaxPooling2D(2),
+keras.layers.Conv2D(256, 3, activation="relu", padding="same"), #256 filtri larghi 3x3
+keras.layers.Conv2D(256, 3, activation="relu", padding="same"),
+keras.layers.MaxPooling2D(2),
+keras.layers.Flatten(),
+keras.layers.Dense(128, activation="relu"),
+keras.layers.Dropout(0.5),
+keras.layers.Dense(64, activation="relu"),
+keras.layers.Dropout(0.5),
+keras.layers.Dense(10, activation="softmax")
+])
+
+
+DEEP RNN
+
+model = keras.models.Sequential([
+keras.layers.SimpleRNN(20, return_sequences=True, input_shape=[None, 1]),
+keras.layers.SimpleRNN(20, return_sequences=True),
+keras.layers.SimpleRNN(1)
+])

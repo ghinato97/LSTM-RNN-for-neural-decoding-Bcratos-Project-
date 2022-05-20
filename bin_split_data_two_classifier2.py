@@ -35,6 +35,7 @@ def obj_mapping(id): #mappatura oggetti uguali
 
 
 def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
+    global np_matrix,t,x
     lookback = 8 
     x = []
     y = []
@@ -57,8 +58,10 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
                 y.append(0)
                 
             x.append(t)
-       
-        data_set = np.array(x)
+            
+            
+        dataset=somma_canali(x)
+        data_set = np.array(dataset)
         y_label = np.array(y)    
         
         label_encoder = LabelEncoder()
@@ -71,7 +74,6 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
     return data_set, label
             
 def prepare_Multiclass_Dataset(dirpath, df): #dataset per attivazione multiclasse si considerano solo le attivazioni
-    global y_label
     lookback = 8 
     x = []
     y = []
@@ -86,14 +88,16 @@ def prepare_Multiclass_Dataset(dirpath, df): #dataset per attivazione multiclass
         
         for i in range(np_matrix.shape[1]-lookback-1):
             t = []
-            if (i+lookback) >= row['Hold'] and (i+lookback) < row['Rew']:
+            if (i+lookback) >= (row['Hold']) and (i+lookback) < (row['Rew']):
                 for j in range(0, lookback):
                     t.append(np_matrix[:, [(i+j)]])
                 y.append(obj_mapping(obj))
             
                 x.append(t)
                 
-        data_set = np.array(x)
+                
+        dataset=somma_canali(x)
+        data_set = np.array(dataset)
         y_label = np.array(y)    
         
         label_encoder = LabelEncoder()
@@ -104,6 +108,18 @@ def prepare_Multiclass_Dataset(dirpath, df): #dataset per attivazione multiclass
         label = onehot_encoder.transform(integer_encoded)
      
     return data_set, label
+
+
+def somma_canali(x):
+    somma=[]
+    for i in range(len(x)):
+        k=x[i]
+        p=[]
+        for j in range(len(k)):
+            kk=sum(k[j])
+            p.append(kk)
+        somma.append(p)
+    return somma
 
 
 

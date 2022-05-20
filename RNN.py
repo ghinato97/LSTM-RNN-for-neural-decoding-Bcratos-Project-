@@ -1,5 +1,5 @@
 # from bin_slit_data_sum import *
-from bin_slit_data_sum import *
+from bin_split_data_sum import *
 import math 
 from sklearn.preprocessing import MinMaxScaler
 from keras import Sequential,optimizers
@@ -67,6 +67,7 @@ if __name__=="__main__":
     #confusion matrix
     
     cm = confusion_matrix(label_test,predicted_value)
+    print(cm)
     
     
     

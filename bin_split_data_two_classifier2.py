@@ -43,6 +43,7 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
         s = str(int(row['img_id']))
         obj = int(row['obj_id'])
         stringa = 'img_'+s
+        print(stringa)
         filepath = os.path.join(dirpath, stringa)
         binned_spk = np.load(filepath)
         np_matrix = binned_spk['arr_0']

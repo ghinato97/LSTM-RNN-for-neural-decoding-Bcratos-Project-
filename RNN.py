@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-# from bin_slit_data_sum import *
-from bin_split_data_sum import *
->>>>>>> 9a6ac8e381966fe30bf5d1165d305d7d745c0438
 import math 
 from sklearn.preprocessing import MinMaxScaler
 from keras import Sequential,optimizers
@@ -88,11 +83,7 @@ if __name__=="__main__":
     
     #confusion matrix
     
-<<<<<<< HEAD
     cm = confusion_matrix(label_test_bin,predicted_value)
-=======
-    cm = confusion_matrix(label_test,predicted_value)
->>>>>>> 9a6ac8e381966fe30bf5d1165d305d7d745c0438
     print(cm)
     
     

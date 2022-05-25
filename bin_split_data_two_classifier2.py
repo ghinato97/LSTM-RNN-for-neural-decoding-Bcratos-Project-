@@ -35,7 +35,6 @@ def obj_mapping(id): #mappatura oggetti uguali
 
 
 def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
-    global np_matrix,t,x
     lookback = 8 
     x = []
     y = []
@@ -151,9 +150,36 @@ if __name__ == "__main__":
     img = binned_samples_df['img_id']
     obj = binned_samples_df['obj_id']
 
-    train_df, test_df = train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)
+    train_df, test_df = train_test_split(binned_samples_df, test_size=0.2, random_state=42, stratify=binned_samples_df.obj_id)    
+    
     train_bin_set, label_bin_train = prepare_Binary_Dataset(args.dataset, train_df)
     test_bin_set, label_bin_test = prepare_Binary_Dataset(args.dataset, test_df)
     
     train_multi_set, label_multi_train = prepare_Multiclass_Dataset(args.dataset, train_df)
     test_multi_set, label_multi_test = prepare_Multiclass_Dataset(args.dataset, test_df)
+    
+    
+    logging.info('\n')
+    logging.info('Save binary dataset')
+    with open(os.path.join('data',data_prefix+'_trainset_bin.npz'), 'bw') as trainfile:
+        np.savez(trainfile, X=train_bin_set, y=label_bin_train)
+    with open(os.path.join('data',data_prefix+'_testset_bin.npz'), 'bw') as testfile:
+        np.savez(testfile, X=test_bin_set, y=label_bin_test)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

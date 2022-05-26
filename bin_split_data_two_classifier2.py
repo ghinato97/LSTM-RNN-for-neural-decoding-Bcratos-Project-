@@ -43,7 +43,6 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
         s = str(int(row['img_id']))
         obj = int(row['obj_id'])
         stringa = 'img_'+s
-        print(stringa)
         filepath = os.path.join(dirpath, stringa)
         binned_spk = np.load(filepath)
         np_matrix = binned_spk['arr_0']
@@ -60,8 +59,7 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
             x.append(t)
             
             
-        dataset=somma_canali(x)
-        data_set = np.array(dataset)
+        data_set = np.array(x)
         y_label = np.array(y)    
         
         label_encoder = LabelEncoder()
@@ -96,8 +94,7 @@ def prepare_Multiclass_Dataset(dirpath, df): #dataset per attivazione multiclass
                 x.append(t)
                 
                 
-        dataset=somma_canali(x)
-        data_set = np.array(dataset)
+        data_set = np.array(x)
         y_label = np.array(y)    
         
         label_encoder = LabelEncoder()
@@ -110,16 +107,6 @@ def prepare_Multiclass_Dataset(dirpath, df): #dataset per attivazione multiclass
     return data_set, label
 
 
-def somma_canali(x):
-    somma=[]
-    for i in range(len(x)):
-        k=x[i]
-        p=[]
-        for j in range(len(k)):
-            kk=sum(k[j])
-            p.append(kk)
-        somma.append(p)
-    return somma
 
 
 
@@ -166,6 +153,15 @@ if __name__ == "__main__":
         np.savez(trainfile, X=train_bin_set, y=label_bin_train)
     with open(os.path.join('data',data_prefix+'_testset_bin.npz'), 'bw') as testfile:
         np.savez(testfile, X=test_bin_set, y=label_bin_test)
+        
+        
+        
+    logging.info('\n')
+    logging.info('Save multiclass dataset')
+    with open(os.path.join('data',data_prefix+'_trainset_multi.npz'), 'bw') as trainfile:
+        np.savez(trainfile, X=train_multi_set, y=label_multi_train)
+    with open(os.path.join('data',data_prefix+'_testset_multi.npz'), 'bw') as testfile:
+        np.savez(testfile, X=test_multi_set, y=label_multi_test)
         
         
         

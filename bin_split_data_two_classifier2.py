@@ -157,6 +157,14 @@ if __name__ == "__main__":
         np.savez(trainfile, X=train_bin_set, y=label_bin_train)
     with open(os.path.join('data',data_prefix+'_testset_bin.npz'), 'bw') as testfile:
         np.savez(testfile, X=test_bin_set, y=label_bin_test)
+            
+        
+    logging.info('\n')
+    logging.info('Save multiclass dataset')
+    with open(os.path.join('data',data_prefix+'_trainset_multi.npz'), 'bw') as trainfile:
+        np.savez(trainfile, X=train_multi_set, y=label_multi_train)
+    with open(os.path.join('data',data_prefix+'_testset_multi.npz'), 'bw') as testfile:
+        np.savez(testfile, X=test_multi_set, y=label_multi_test)
         
         
         

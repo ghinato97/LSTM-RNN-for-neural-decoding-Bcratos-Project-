@@ -30,6 +30,8 @@ def obj_mapping(id): #mappatura oggetti uguali
          return 44
      if id == 16:
          return 25
+     if id == 12:
+        return 54    
      return id
  
 
@@ -43,6 +45,7 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
         s = str(int(row['img_id']))
         obj = int(row['obj_id'])
         stringa = 'img_'+s
+        print(stringa)
         filepath = os.path.join(dirpath, stringa)
         binned_spk = np.load(filepath)
         np_matrix = binned_spk['arr_0']
@@ -59,6 +62,7 @@ def prepare_Binary_Dataset(dirpath,df): #dataset per classificazione binaria
             x.append(t)
             
             
+
         data_set = np.array(x)
         y_label = np.array(y)    
         
@@ -153,8 +157,7 @@ if __name__ == "__main__":
         np.savez(trainfile, X=train_bin_set, y=label_bin_train)
     with open(os.path.join('data',data_prefix+'_testset_bin.npz'), 'bw') as testfile:
         np.savez(testfile, X=test_bin_set, y=label_bin_test)
-        
-        
+            
         
     logging.info('\n')
     logging.info('Save multiclass dataset')

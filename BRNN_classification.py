@@ -27,6 +27,7 @@ def lr_scheduler(epoch, lr):
   else:
     return lr/2.
 
+
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains/lookback_12_lookahead_0',
@@ -42,10 +43,10 @@ if __name__== "__main__":
     logging.info('----------------')
     logging.info('\n')
     logging.info('Loading data...')
-
     
-    trainset_multi_path = os.path.join(args.dataset, 'multi_trainset.npz')
-    testset_multi_path = os.path.join(args.dataset, 'multi_testset.npz')
+    
+    trainset_multi_path = os.path.join(args.dataset, 'binary_trainset.npz')
+    testset_multi_path = os.path.join(args.dataset, 'binary_testset.npz')
     
     train_multi_set, label_multi_train = load_data(trainset_multi_path)
     test_multi_set, label_multi_test = load_data(testset_multi_path)
@@ -63,10 +64,11 @@ if __name__== "__main__":
     opt = keras.optimizers.Adam(learning_rate=0.0002)
     #     callback = []
     #     callback = keras.callbacks.LearningRateScheduler(lr_scheduler, verbose=1)
-    callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=20, restore_best_weights=True)
+    # callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=20, restore_best_weights=True)
     
     model.compile(optimizer = opt, loss = "categorical_crossentropy", metrics = ["accuracy"])  #categorical perchè sono n classi
-    model.fit(train_multi_set, label_multi_train, epochs = 100, batch_size = 128, validation_data=(test_multi_set, label_multi_test), callbacks=[callback])
+    model.fit(train_multi_set, label_multi_train, epochs = 100, batch_size = 128, validation_data=(test_multi_set, label_multi_test))
+    # model.fit(train_multi_set, label_multi_train, epochs = 100, batch_size = 128, validation_data=(test_multi_set, label_multi_test), callbacks=[callback])
   
     model.save(data_prefix+'_multi_model')
     

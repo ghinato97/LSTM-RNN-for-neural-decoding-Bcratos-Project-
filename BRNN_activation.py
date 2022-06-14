@@ -60,13 +60,15 @@ if __name__== "__main__":
     model.add(Dense(label_bin_train.shape[1], activation = "softmax"))
     model.summary()
     
-    opt = keras.optimizers.Adam(learning_rate=0.0002)
-    #     callback = []
+    opt = keras.optimizers.Adam(learning_rate=0.0002)    #     callback = []
     #     callback = keras.callbacks.LearningRateScheduler(lr_scheduler, verbose=1)
-    callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=10, restore_best_weights=True)
+    
+    
+    # callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=10, restore_best_weights=True)
     
     model.compile(optimizer = opt, loss = "binary_crossentropy", metrics = "accuracy") # binary perchè sono due classi
-    model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test), callbacks=[callback])
+    model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test))
+    # model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test), callbacks=[callback])
   
     model.save(data_prefix+'_binary_model')
 

@@ -21,7 +21,7 @@ def load_data(filepath):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains/lookback_12_lookahead_0',
                         type=str)
 
     parser.add_argument("--ref-start-event", help="Reference start event for data window definition and grasp labelling", default='Hold',
@@ -51,9 +51,9 @@ if __name__=="__main__":
     # test_set,label_test=Prepare_Dataset(args.dataset,test_df)
 
     data_prefix = os.path.basename(os.path.normpath(args.dataset))
-    trainset_bin_path = args.dataset+'_trainset_bin.npz'
-    testset_bin_path = args.dataset+'_testset_bin.npz'
-    testlist_bin_path = args.dataset+'_testlist.pkl'
+    trainset_bin_path = args.dataset+'/binary_trainset.npz'
+    testset_bin_path = args.dataset+'/binary_testset.npz'
+    testlist_bin_path = args.dataset+'/testlist.pkl'
     
     train_bin_set, label_train_bin = load_data(trainset_bin_path)
     test_bin_set, label_test_bin = load_data(testset_bin_path)
@@ -73,18 +73,18 @@ if __name__=="__main__":
     model.compile(optimizer='Adam', loss="binary_crossentropy",metrics='accuracy')
     
     
-    model.fit(train_bin_set,label_train_bin, epochs=100, batch_size=16)
+    # model.fit(train_bin_set,label_train_bin, epochs=100, batch_size=16)
 
-    predicted_value= model.predict(test_bin_set)
-    predicted_value=predicted_value.round()
+    # predicted_value= model.predict(test_bin_set)
+    # predicted_value=predicted_value.round()
     
-    predicted_value=predicted_value.argmax(axis=1)
-    label_test_bin=label_test_bin.argmax(axis=1)
+    # predicted_value=predicted_value.argmax(axis=1)
+    # label_test_bin=label_test_bin.argmax(axis=1)
     
-    #confusion matrix
+    # #confusion matrix
     
-    cm = confusion_matrix(label_test_bin,predicted_value)
-    print(cm)
+    # cm = confusion_matrix(label_test_bin,predicted_value)
+    # print(cm)
     
     
     

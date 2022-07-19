@@ -29,7 +29,7 @@ def lr_scheduler(epoch, lr):
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains/lookback_12_lookahead_0',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/lookback_12_lookahead_0',
                         type=str)
 
     args = parser.parse_args()
@@ -64,11 +64,11 @@ if __name__== "__main__":
     #     callback = keras.callbacks.LearningRateScheduler(lr_scheduler, verbose=1)
     
     
-    # callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=10, restore_best_weights=True)
+    callback = keras.callbacks.EarlyStopping(monitor="val_accuracy", patience=10, restore_best_weights=True)
     
     model.compile(optimizer = opt, loss = "binary_crossentropy", metrics = "accuracy") # binary perchè sono due classi
-    model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test))
-    # model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test), callbacks=[callback])
+    # model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test))
+    model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test), callbacks=[callback])
   
     model.save(data_prefix+'_binary_model')
 

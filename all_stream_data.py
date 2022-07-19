@@ -19,6 +19,7 @@ logging.basicConfig(
 
 
 def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_correct=False):
+    global bst_array
     if not os.path.exists(os.path.join(outdir,out_prefix+'binned_spiketrains')):
         os.makedirs(os.path.join(outdir,out_prefix+'binned_spiketrains'))
     neodata = NeoMatlabIO(filename)
@@ -62,7 +63,7 @@ def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_c
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='data/ZRec50_Mini.neo.mat',
+    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='data_input/ZRec50_Mini.neo.mat',
                         type=str)
     parser.add_argument("-o", "--outdir", help="destination directory for dataset", default='data',
                         type=str)

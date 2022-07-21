@@ -35,6 +35,7 @@ def obj_mapping(id): #mappatura oggetti uguali
     return id
 
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
+    global np_matrix
     X_bin = []
     y_bin = []
     y = []

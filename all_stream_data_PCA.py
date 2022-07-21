@@ -53,13 +53,6 @@ def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_c
             # binned spiketrain as numpy array
             bst_array = bst.to_array()
             
-
-            pca=PCA(n_components=85 )
-            bst_array=bst_array.T
-            bst_array_PCA=pca.fit_transform(bst_array)
-            bst_array_PCA=bst_array_PCA.T
-            
-            
             output_file = open(os.path.join(outdir,out_prefix+'binned_spiketrains','img_'+str(i)), "wb")
             # save array to the file
             np.savez(output_file, bst_array_PCA)

@@ -1,5 +1,6 @@
 from neo.io.neomatlabio import NeoMatlabIO
 from elephant.conversion import BinnedSpikeTrain
+
 import quantities as pq
 import numpy as np
 import os
@@ -19,7 +20,6 @@ logging.basicConfig(
 
 
 def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_correct=False):
-    global bst_array
     if not os.path.exists(os.path.join(outdir,out_prefix+'binned_spiketrains')):
         os.makedirs(os.path.join(outdir,out_prefix+'binned_spiketrains'))
     neodata = NeoMatlabIO(filename)
@@ -51,6 +51,17 @@ def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_c
             binned_samples_df=binned_samples_df.append(events_dict, ignore_index=True)
             # binned spiketrain as numpy array
             bst_array = bst.to_array()
+            #print(bst_array.shape)
+            
+                        
+
+            #pca=PCA(n_components=85 )
+            #bst_array=bst_array.T
+            #bst_array_PCA=pca.fit_transform(bst_array)
+            #bst_array_PCA=bst_array_PCA.T
+            #print(bst_array_PCA.shape)
+            
+            
             output_file = open(os.path.join(outdir,out_prefix+'binned_spiketrains','img_'+str(i)), "wb")
             # save array to the file
             np.savez(output_file, bst_array)
@@ -63,7 +74,7 @@ def from_matlab_to_numpy_data(filename, bin_size, out_prefix, outdir, not_only_c
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='data_input/ZRec50_Mini.neo.mat',
+    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='/m100_work/try22_viviani/bcratos_data/MRec40.neo.mat',
                         type=str)
     parser.add_argument("-o", "--outdir", help="destination directory for dataset", default='data',
                         type=str)

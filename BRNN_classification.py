@@ -30,7 +30,7 @@ def lr_scheduler(epoch, lr):
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/lookback_12_lookahead_0',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/PCA_Dataset',
                         type=str)
 
     args = parser.parse_args()
@@ -84,7 +84,7 @@ if __name__== "__main__":
     sns.heatmap(cm2, annot=cm2, cmap='Blues')
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.savefig('all_classes_matrix_BRNN.png')
+    plt.savefig('all_classes_matrix_BRNN_PCA.png')
     plt.close()
     print('All classes report')
     print(classification_report(label_multi_test, predicted_multi_value))

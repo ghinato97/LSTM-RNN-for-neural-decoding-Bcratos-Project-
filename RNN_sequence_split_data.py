@@ -9,6 +9,7 @@ import pickle
 import argparse
 import logging
 import pathlib
+from sklearn.decomposition import FastICA
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,7 +36,6 @@ def obj_mapping(id): #mappatura oggetti uguali
     return id
 
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
-    global np_matrix
     X_bin = []
     y_bin = []
     y = []
@@ -53,7 +53,8 @@ def prepare_detection_dataset(dirpath,df,lookback, lookahead):
         for i in range(np_matrix.shape[1]-lookback-lookahead):
             t = []
             for j in range(0, lookback):
-                t.append(np_matrix[:, [(i+j)]])
+                matrix=np_matrix[:, [(i+j)]]                
+                t.append(matrix)
             X_bin.append(t)
             if (i+lookback+lookahead) >= hold[idx] and (i+lookback+lookahead) < rew[idx]:  # attivazione
                 y_bin.append(1)
@@ -99,7 +100,8 @@ def prepare_classification_dataset(dirpath,df,lookback, lookahead):
         for i in range(np_matrix.shape[1]-lookback-lookahead):
             t = []
             for j in range(0, lookback):
-                t.append(np_matrix[:, [(i+j)]])
+                matrix=np_matrix[:, [(i+j)]]                
+                t.append(matrix)
             if (i+lookback+lookahead) >= hold[idx] and (i+lookback+lookahead) < rew[idx]:  # attivazione
                 X.append(t)
                 y.append(obj_mapping(obj_ids[idx]))
@@ -118,7 +120,7 @@ def prepare_classification_dataset(dirpath,df,lookback, lookahead):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains',
                         type=str)
     parser.add_argument("-o", "--outdir", help="Output data directory", default='./data',
                         type=str)

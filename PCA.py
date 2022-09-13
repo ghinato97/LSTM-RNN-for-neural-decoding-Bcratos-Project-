@@ -1,12 +1,23 @@
 from sklearn.decomposition import PCA
 from neo.io.neomatlabio import NeoMatlabIO
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder,MinMaxScaler
 from sklearn.model_selection import train_test_split
 import argparse
 import logging
 import os
 import pandas as pd
 import numpy as np
+import pickle as pk
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s:  %(message)s',
+    datefmt='%m/%d/%Y %H:%M:%S',
+    handlers=[
+        logging.FileHandler("window_split_data.log", mode='w'),
+        logging.StreamHandler()
+    ]
+)
 
 def obj_mapping(id): #mappatura oggetti uguali
     if id == 11:
@@ -23,9 +34,21 @@ def obj_mapping(id): #mappatura oggetti uguali
 
 
 def P_C_A(X_train):
-    pca=PCA(n_components=150)
+    pca=PCA(n_components=200).fit(X_train)
+    pk.dump(pca, open("pca.pkl","wb"))
     X_reduced=pca.fit_transform(X_train)
     return X_reduced,pca
+
+
+def Zero_Pad(X_data,n=600):
+    global col_miss,x
+    col=X_data.shape[1]
+    righe=X_data.shape[0]
+    col_miss=n-col
+    x=np.zeros((righe,col_miss))
+    arr=np.append(X_data,x,axis=1)
+    return arr
+
     
 def dataset_PCA(dirpath,df):
     X = []
@@ -43,7 +66,11 @@ def dataset_PCA(dirpath,df):
         
         X.append(np_matrix.T)
 
-    X_=np.vstack(X)   
+    X_=np.vstack(X)
+    #scaler = MinMaxScaler()
+    #scaler.fit(X_)
+    #X_=scaler.transform(X_)
+    
     return X_,size_matrix_bin,size_matrix_multi
 
 def Prepare_dataset_bin(PCA_Dataset,size_matrix,df):
@@ -132,20 +159,20 @@ def Prepare_dataset_multi(PCA_Dataset,size_matrix,df):
     y_label = np.array(y) 
     
     
-    # label_encoder = LabelEncoder()
-    # label_encoder.fit(y_label)
-    # integer_encoded = label_encoder.transform(y_label).reshape(len(y_label), 1)
-    # onehot_encoder = OneHotEncoder(sparse=False)
-    # onehot_encoder.fit(integer_encoded)
-    # label = onehot_encoder.transform(integer_encoded)
+    label_encoder = LabelEncoder()
+    label_encoder.fit(y_label)
+    integer_encoded = label_encoder.transform(y_label).reshape(len(y_label), 1)
+    onehot_encoder = OneHotEncoder(sparse=False)
+    onehot_encoder.fit(integer_encoded)
+    label = onehot_encoder.transform(integer_encoded)
         
-    return data_set,y_label        
+    return data_set,label        
 
 
 if __name__=='__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help=".mat file containing brain recordings", default='data/MRec40_40_binned_spiketrains',
                         type=str)
     
     parser.add_argument("-o", "--outdir", help="Output data directory", default='./data',
@@ -164,12 +191,22 @@ if __name__=='__main__':
     
     X_Train,size_matrix_bin_Train,size_matrix_multi_Train=dataset_PCA(args.dataset,train_df)
     X_Test,size_matrix_bin_Test,size_matrix_multi_Test=dataset_PCA(args.dataset,test_df)
+    X_data,size_matrix_bin,size_matrix_multi=dataset_PCA(args.dataset,df)
+    
+    X_Train=Zero_Pad(X_Train)
+    X_Test=Zero_Pad(X_Test)
+    X_data=Zero_Pad(X_data)
+    
+    print('\nDimensioni del full dataset:')
+    print(X_data.shape)
     
     
     logging.info('\n')
     logging.info('Creating PCA dataset...')    
     Data_PCA_Train,pca =P_C_A(X_Train)
     Data_PCA_Test=pca.transform(X_Test)
+    Data_PCA=pca.transform(X_data) 
+    
 
     
     logging.info('\n')
@@ -179,24 +216,36 @@ if __name__=='__main__':
         
     
     logging.info('\n')
-    logging.info('Processing Bin PCA dataset ..')        
+    logging.info('Processing Bin PCA dataset ..')   
+    data_set_bin,label,label_bin=Prepare_dataset_bin(Data_PCA,size_matrix_bin,df)         
     data_set_train_bin,label_train,label_train_bin=Prepare_dataset_bin(Data_PCA_Train, size_matrix_bin_Train,train_df)
     data_set_test_bin,label_test,label_test_bin=Prepare_dataset_bin(Data_PCA_Test, size_matrix_bin_Test,test_df)
     
     with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','binary_trainset.npz'), 'bw') as trainfile:
         np.savez(trainfile, X=data_set_train_bin, y=label_train_bin)
     with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','binary_testset.npz'), 'bw') as testfile:
-            np.savez(testfile, X=data_set_test_bin ,y=label_test_bin)
+            np.savez(testfile, X=data_set_test_bin ,y=label_test_bin)            
+    with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','binary_full.npz'), 'bw') as trainfile:
+        np.savez(trainfile, X=data_set_bin, y=label_bin)
+    
             
             
     
     logging.info('\n')
-    logging.info('Processing Multi PCA dataset ..')        
+    logging.info('Processing Multi PCA dataset ..')  
+    data_set_multi,label_multi=Prepare_dataset_multi(Data_PCA,size_matrix_multi,df)           
     data_set_train_multi,label_train_multi=Prepare_dataset_multi(Data_PCA_Train, size_matrix_multi_Train,train_df)
     data_set_test_multi,label_test_multi=Prepare_dataset_multi(Data_PCA_Test, size_matrix_multi_Test,test_df)
     
+    with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','multi_full.npz'), 'bw') as trainfile:
+        np.savez(trainfile, X=data_set_multi, y=label_multi)
     with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','multi_trainset.npz'), 'bw') as trainfile:
         np.savez(trainfile, X=data_set_train_multi, y=label_train_multi)
     with open(os.path.join(args.outdir,data_prefix,'PCA_Dataset','multi_testset.npz'), 'bw') as testfile:
             np.savez(testfile, X=data_set_test_multi ,y=label_test_multi)
+    
+    logging.info('\n')
+    logging.info('Completed')
+    
+   
     

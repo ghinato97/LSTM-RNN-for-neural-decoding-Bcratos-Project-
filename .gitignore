@@ -1,6 +1,6 @@
 data
 *.log
-all_classes_matrix_MRec40.png
-all_classes_matrix_MRec41.png
-binary_classes_matrix_MRec40.png
-binary_classes_matrix_MRec41.png
+Continuous_control_MRec40_40_binned_spiketrainsmodel
+data_input
+Continuous_control_ZRec50_Mini_40_binned_spiketrainsmodel
+

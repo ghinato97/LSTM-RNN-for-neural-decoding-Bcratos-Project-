@@ -36,6 +36,7 @@ def obj_mapping(id): #mappatura oggetti uguali
     return id
 
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
+    global np_matrix
     X_bin = []
     y_bin = []
     y = []
@@ -120,7 +121,7 @@ def prepare_classification_dataset(dirpath,df,lookback, lookahead):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains',
                         type=str)
     parser.add_argument("-o", "--outdir", help="Output data directory", default='./data',
                         type=str)

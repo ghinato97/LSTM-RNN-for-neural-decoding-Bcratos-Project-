@@ -79,7 +79,7 @@ def lr_scheduler(epoch, lr):
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/Continuous_control/MRec40_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/Continuous_control/ZRec50_Mini_40_binned_spiketrains',
                         type=str)
 
     args = parser.parse_args()
@@ -101,12 +101,11 @@ if __name__== "__main__":
     test_set, label_test = load_data(testset_bin_path)
 
 
-    # Regressione
     print('\n')
     model = Sequential()
-    model.add(LSTM(units = 40, return_sequences = True, dropout=0.6, input_shape = (train_set.shape[1], train_set.shape[2])))
-    model.add(LSTM(units = 40, return_sequences = False, dropout=0.6))
-    # model.add(LSTM(units = 40, return_sequences = False, dropout=0.6))
+    model.add(Bidirectional(LSTM(40, return_sequences = True, dropout=0.6), input_shape = (train_set.shape[1], train_set.shape[2])))
+    model.add(Bidirectional(LSTM(units = 40, return_sequences = True, dropout=0.6)))
+    model.add(Bidirectional(LSTM(units = 40, return_sequences = False, dropout=0.6)))
     model.add(Dense(2))
     model.summary()
     
@@ -116,7 +115,7 @@ if __name__== "__main__":
     
     callback = keras.callbacks.EarlyStopping(monitor="val_mean_squared_error", patience=10, restore_best_weights=True)
     
-    model.compile(optimizer = opt, loss = "mean_squared_error",metrics=['MeanSquaredError', 'MeanAbsoluteError']) # binary perchè sono due classi
+    model.compile(optimizer = opt, loss = "mean_squared_error",metrics=['MeanSquaredError', 'MeanAbsoluteError','RootMeanSquaredError']) # binary perchè sono due classi
     # model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test))
     model.fit(train_set, label_train, epochs = 50, batch_size = 128, validation_data=(test_set, label_test), callbacks=[callback])
   
@@ -151,10 +150,3 @@ if __name__== "__main__":
     plt.close()
     
     cartesian_plot(label_test[1:150,0],label_test[1:150,1],predicted_value[1:150,0],predicted_value[1:150,1])
-    
-    
-    
-    
-
-
-    

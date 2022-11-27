@@ -10,6 +10,8 @@ from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+import pickle
 
 
 logging.basicConfig(
@@ -24,7 +26,6 @@ logging.basicConfig(
 
 
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
-    global filenames,data_set,dizionario_label,dizionario_val
     X = []
     label= []
 
@@ -45,13 +46,16 @@ def prepare_detection_dataset(dirpath,df,lookback, lookahead):
     obj_ids = df['obj_id'].to_numpy(dtype=int)
     dizionario_val={}
     dizionario_label={}
-
+    obj_val={}
+    obj_label={}
+    list_indici=[]
     for idx in range(len(filenames)):
         filepath = os.path.join(dirpath, 'img_'+filenames[idx])
         binned_spk = np.load(filepath)
         np_matrix = binned_spk['arr_0']
+        #cerco l'indice dell'immagine relativa
         indice=int(df[df['img_id']==int(filenames[idx])].index.values)
-
+        list_indici.append(indice)
         
         matrice=np.zeros([2,np_matrix.shape[1]])
         
@@ -90,14 +94,23 @@ def prepare_detection_dataset(dirpath,df,lookback, lookahead):
         data_set = np.array(X)
         y_label = np.array(label)    
         nome=filenames[idx]
-        dizionario_val[nome]=data_set
-        dizionario_label[nome]=y_label
+        
+        dizionario_val[indice]=data_set
+        dizionario_label[indice]=y_label
+        
+        
+        obj_id=obj_ids[idx]
+        obj_val[str(obj_id)]=data_set
+        obj_label[str(obj_id)]=y_label
+        X=[]
+        label=[]
+
         
         
             
         
         
-    return dizionario_val,dizionario_label
+    return dizionario_val,dizionario_label,obj_val,obj_label
         
 
             
@@ -175,13 +188,13 @@ def prepare_binned(binned_samples_df):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", help="Name of CC BRNN model", default='Continuous_control_ZRec50_Mini_40_binned_spiketrainsmodel',
+    parser.add_argument("-m", "--model", help="Name of CC BRNN model", default='Continuous_control_MRec40_40_binned_spiketrainsmodel',
                         type=str)
 
-    parser.add_argument("-b", "--binned_data", help="Name of binned dataset ", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-b", "--binned_data", help="Name of binned dataset ", default='data/MRec40_40_binned_spiketrains',
                         type=str)
     
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains',
                         type=str)
     
     args = parser.parse_args()
@@ -198,7 +211,11 @@ if __name__ == "__main__":
     lookahead=0
     lookback=12
     
-    X_Test,y_test=prepare_detection_dataset(args.dataset,test_df,lookback, lookahead)
+    X_Test,y_test,obj_X_test,obj_y_test=prepare_detection_dataset(args.dataset,test_df,lookback, lookahead)
+    
+    with open("y_test.pkl", "wb") as f:
+       pickle.dump(y_test, f)
+
     
     logging.info('\n')
     logging.info('----------------')
@@ -207,3 +224,114 @@ if __name__ == "__main__":
     model=keras.models.load_model(data_prefix)
     logging.info('Binary Model Info')
     model.summary()
+    
+    predicted_dict={}
+    lista_indici=list(test_df.index)
+    lista_oggetti=list(test_df.obj_id)
+    data = {'obj_id': [],
+	'index_id': [],
+	'MSE': []}
+
+    MSE_df=pd.DataFrame(data)
+    
+    for i in range(len(lista_indici)):
+        n=int(lista_indici.pop())
+        p=int(lista_oggetti.pop())
+        
+        Go=int(test_df.loc[[n]]['Go'].to_numpy()[0]-12)
+        End=int(test_df.loc[[n]]['End'].to_numpy()[0]-12)
+        
+        test=X_Test[n]
+        label=y_test[n]
+        
+        predicted_value = model.predict(test)
+        
+        predicted_dict[str(n)]=predicted_value
+        
+        mse=mean_squared_error(y_test[n][(Go):(End)],predicted_value[(Go):(End)])
+        new_row = {'obj_id':p, 'index_id':n, 'MSE':mse}
+        MSE_df=MSE_df.append(new_row,ignore_index=True)
+        
+
+    MSE_df=MSE_df.sort_values(by=['MSE'])
+    
+    
+    #utilizzo il valore MSE come asse x
+    asse_x=MSE_df.MSE.to_numpy()
+    asse_x=np.round(asse_x,2)
+    #utilizzo il numero del trial come valore y
+    asse_y=MSE_df.index_id.to_numpy()
+    
+    #Plotting MSE 
+    plt.figure(figsize=(9,9))
+    plt.hist(asse_x,bins=20)
+    plt.xlabel('MSE',fontsize=20)
+    plt.ylabel('#Trial',fontsize=20)
+    plt.plot([0.3, 0.3], [0, 16], 'k-', lw=2)
+    plt.savefig('MSE evaluetion.png')
+    plt.show()
+    
+    valori_minori=asse_x[asse_x<=0.35]
+    
+    print('\n')
+    print('-------------------------------')
+    percentuale= len(valori_minori)/len(asse_x)*100
+    print(f'Percentuale MSE al di sotto della soglia:{percentuale}')
+    
+    with open("predicted_value.pkl", "wb") as f:
+       pickle.dump(predicted_dict, f)
+    
+    
+    
+    # cerco i numeri di oggetti che hanno il valore MSE minore di 0.35 e plotto i valori
+    #predetti e reali
+    minore_soglia=MSE_df.where(MSE_df.MSE<0.35).dropna()
+    
+    with open("sotto_soglia_value.pkl", "wb") as f:
+       pickle.dump(minore_soglia, f)
+       
+    # for i in range(len(minore_soglia)):
+    #     indice_peggio_035=minore_soglia.iloc[i]['index_id']
+    #     peggio_predizione=predicted_dict[str(int(indice_peggio_035))]
+    #     peggio_true_label=y_test[int(indice_peggio_035)]
+        
+    #     fig, ax = plt.subplots(figsize=(16,14))
+    #     plt.plot(peggio_true_label[:,0],label='True Values')  # green dots
+    #     plt.plot(peggio_predizione[:,0],label='Predicted_Values')  # blue stars
+    #     plt.title('Comparison')  
+    #     plt.xlabel('Time_Stamp')
+    #     plt.ylabel('Value')
+    #     plt.legend(loc='best')
+    
+    
+
+
+    
+    
+
+
+    
+
+    # # Plotting MSE-Trial
+    # plt.figure()
+    # plt.bar(asse_x,asse_y,width = 0.01)
+    # plt.xlabel('MSE')
+    # plt.ylabel('#Trial')
+    # plt.savefig('MSE evaluetion on trial.png')
+    # plt.show()
+                
+    # #raggruppo il db in base all'oggetto e faccio valore medio MSE     
+    # df=MSE_df.drop(['index_id'],axis=1)
+    # df=df.groupby('obj_id').mean()
+          
+    
+    
+    
+    
+        
+        
+    
+
+
+    
+    

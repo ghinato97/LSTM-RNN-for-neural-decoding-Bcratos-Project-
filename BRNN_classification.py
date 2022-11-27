@@ -30,7 +30,7 @@ def lr_scheduler(epoch, lr):
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/PCA_Dataset',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/lookback_12_lookahead_0',
                         type=str)
 
     args = parser.parse_args()

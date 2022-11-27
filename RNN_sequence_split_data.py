@@ -9,7 +9,6 @@ import pickle
 import argparse
 import logging
 import pathlib
-from sklearn.decomposition import FastICA
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,7 +31,9 @@ def obj_mapping(id): #mappatura oggetti uguali
     if id == 16:
         return 25
     if id == 12:
-        return 54    
+        return 54  
+    if id==56:
+        return 55
     return id
 
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
@@ -121,7 +122,7 @@ def prepare_classification_dataset(dirpath,df,lookback, lookahead):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec32_40_binned_spiketrains',
                         type=str)
     parser.add_argument("-o", "--outdir", help="Output data directory", default='./data',
                         type=str)

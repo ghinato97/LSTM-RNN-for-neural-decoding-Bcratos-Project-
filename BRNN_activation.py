@@ -29,7 +29,7 @@ def lr_scheduler(epoch, lr):
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/MRec40_40_binned_spiketrains/PCA_Dataset',
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains/lookback_12_lookahead_0',
                         type=str)
 
     args = parser.parse_args()
@@ -80,11 +80,11 @@ if __name__== "__main__":
     
     cm1 = confusion_matrix(label_bin_test,predicted_bin_value)
         
-    fig, ax = plt.subplots(figsize=(16,14))
-    sns.heatmap(cm1, annot=cm1, cmap='Blues')
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.savefig('binary_classes_matrix_BRNN.png')
-    plt.close()
+    fig, ax = plt.subplots(figsize=(16, 14))
+    sns.heatmap(cm1, annot=cm1, cmap='Blues',annot_kws={"fontsize":15})
+    plt.xlabel('Predicted', fontsize=15)
+    plt.ylabel('True', fontsize=15)
+    # plt.savefig('binary_classes_matrix_BRNN.png')
+    # plt.close()
     print('Binary classes report')
     print(classification_report(label_bin_test, predicted_bin_value))

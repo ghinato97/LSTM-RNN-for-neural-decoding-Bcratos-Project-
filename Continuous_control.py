@@ -1,6 +1,7 @@
 
 # Prima classificatore binario : Grasp / no Grasp , poi classificatore multiclasse solo con Grasp
 import numpy as np
+import math
 import os
 import math
 import pandas as pd
@@ -27,8 +28,22 @@ logging.basicConfig(
 )
 
 
+def One_dof(train_data):
+    one_dof_=[]
+    for i in range(len(train_data)):
+        valori=train_data[i]
+        x0=valori[0]
+        x1=valori[1]
+        v=math.sqrt(pow(x0,2)+pow(x1,2))
+        one_dof_.append(v)
+        
+    one_dof_=np.array(one_dof_)
+    return one_dof_
+        
+    
+
+
 def prepare_detection_dataset(dirpath,df,lookback, lookahead):
-    global filenames
     X = []
     label= []
 
@@ -88,11 +103,16 @@ def prepare_detection_dataset(dirpath,df,lookback, lookahead):
             label.append(matrice[:,i+lookback+lookahead])
         
     data_set = np.array(X)
-    y_label = np.array(label)    
+    y_label = np.array(label) 
+    
+        
+    
+    
+    return data_set, y_label
         
         
         
-    return data_set,label
+
         
 
             
@@ -211,15 +231,18 @@ if __name__ == "__main__":
     lookahead=0
     lookback=12
     
+    
     X_Train,y_train=prepare_detection_dataset(args.dataset,train_df,lookback, lookahead)
+    one_dof_train=One_dof(y_train)
     X_Test,y_test=prepare_detection_dataset(args.dataset,test_df,lookback, lookahead)
+    one_dof_test=One_dof(y_test)
     
     logging.info('\n')
     logging.info('Save dataset')
     with open(os.path.join(args.outdir,data_prefix,'trainset.npz'), 'bw') as trainfile:
-        np.savez(trainfile, X=X_Train, y=y_train)
+        np.savez(trainfile, X=X_Train, y=y_train, z=one_dof_train)
     with open(os.path.join(args.outdir,data_prefix,'testset.npz'), 'bw') as testfile:
-        np.savez(testfile, X=X_Test, y=y_test)
+        np.savez(testfile, X=X_Test, y=y_test,z=one_dof_test)
     
 
         

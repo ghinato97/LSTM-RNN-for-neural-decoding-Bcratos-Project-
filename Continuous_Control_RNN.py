@@ -103,13 +103,15 @@ if __name__== "__main__":
 
     print('\n')
     model = Sequential()
-    model.add(Bidirectional(LSTM(40, return_sequences = True, dropout=0.6), input_shape = (train_set.shape[1], train_set.shape[2])))
-    model.add(Bidirectional(LSTM(units = 40, return_sequences = True, dropout=0.6)))
-    model.add(Bidirectional(LSTM(units = 40, return_sequences = False, dropout=0.6)))
+    model.add(Bidirectional(LSTM(100, return_sequences = True, dropout=0.6), input_shape = (train_set.shape[1], train_set.shape[2])))
+    model.add(Bidirectional(LSTM(units = 100, return_sequences = True)))
+    model.add(Bidirectional(LSTM(units = 75, return_sequences = True, dropout=0.2)))
+    model.add(Bidirectional(LSTM(units = 75, return_sequences = True, dropout=0.2)))
+    model.add(Bidirectional(LSTM(units = 100, return_sequences = False, dropout=0.2)))
     model.add(Dense(2))
     model.summary()
     
-    opt = keras.optimizers.Adam(learning_rate=0.0002)    #     callback = []
+    opt = keras.optimizers.Adam(learning_rate=0.0001)    #     callback = []
     #     callback = keras.callbacks.LearningRateScheduler(lr_scheduler, verbose=1)
     
     
@@ -119,12 +121,14 @@ if __name__== "__main__":
     # model.fit(train_bin_set, label_bin_train, epochs = 50, batch_size = 128, validation_data=(test_bin_set, label_bin_test))
     model.fit(train_set, label_train, epochs = 50, batch_size = 128, validation_data=(test_set, label_test), callbacks=[callback])
   
-    model.save(data_prefix+'model')
+    model.save(data_prefix+'_model')
 
     predicted_value = model.predict(test_set)
     
     print('---------- Evaluation on Test Data ----------')
-    print("MSE: ", mean_squared_error(label_test, predicted_value))
+    print("Overlall MSE: ", mean_squared_error(label_test, predicted_value))
+    print("X0 MSE: ", mean_squared_error(label_test[:,0], predicted_value[:,0]))
+    print("X1 MSE: ", mean_squared_error(label_test[:,1], predicted_value[:,1]))
     print("")
     
 

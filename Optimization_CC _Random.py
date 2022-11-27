@@ -1,0 +1,100 @@
+
+from tensorflow import keras
+from tensorflow.keras import layers
+import keras_tuner
+import logging
+import argparse
+import os
+import numpy as np
+
+def load_data(filepath):
+    # load existing data
+    windows_dataset = np.load(filepath)
+    X = windows_dataset['X']
+    # X = X.reshape(-1, X[0].shape[0], X[0].shape[1], 1)
+    # resize with 3 channels, but it is still a problem the input dimension
+    # X = np.repeat(X, 3, axis=3)
+    y = windows_dataset['y']
+    return X, y
+
+
+def build_model(hp):
+    model = keras.Sequential()
+    # Tune the number of layers.
+    for i in range(hp.Int("num_layers", 1, 5)):
+        model.add(
+            layers.Bidirectional(layers.LSTM(
+                # Tune number of units separately.
+                units=hp.Int(f"units_{i}", min_value=5, max_value=100, step=5),
+                return_sequences=True,
+                dropout=hp.Float('Dropout', min_value=0.0, max_value=0.6, step=0.2),
+                input_shape=(12,369)
+            )
+        ))
+    model.add(layers.Bidirectional(layers.LSTM(units=10,return_sequences=False, dropout=0.6)))
+    model.add(layers.Dense(2, activation="softmax"))
+    opt = keras.optimizers.Adam(learning_rate=hp.Choice("Learning_Rate", [1e-2,1e-3,1e-4]),)
+    model.compile(
+        optimizer=opt, loss="mean_squared_error", metrics=["MeanSquaredError", "MeanAbsoluteError","RootMeanSquaredError"],
+    )
+    return model
+
+
+
+if __name__== "__main__":
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset", help="Name of dataset from previous step, without extension", default='data/ZRec50_Mini_40_binned_spiketrains/lookback_12_lookahead_0',
+                        type=str)
+
+    args = parser.parse_args()
+    data_prefix = '_'.join(os.path.normpath(args.dataset).split(os.sep)[-2:])
+
+    logging.info('\n')
+    logging.info('----------------')
+    logging.info('Building windows')
+    logging.info(data_prefix)
+    logging.info('----------------')
+    logging.info('\n')
+    logging.info('Loading data...')
+    
+    
+    trainset_path = os.path.join(args.dataset, 'multi_trainset.npz')
+    testset_path = os.path.join(args.dataset, 'multi_testset.npz')
+    
+    train_set, label_train = load_data(trainset_path)
+    test_set, label_test = load_data(testset_path)
+
+    train_set=train_set.reshape(train_set.shape[0],train_set.shape[1],train_set.shape[2])
+    train_set=train_set.astype(float)
+    test_set=test_set.reshape(test_set.shape[0],test_set.shape[1],test_set.shape[2])
+    test_set=test_set.astype(float)
+    
+
+    
+    
+    
+    build_model(keras_tuner.HyperParameters())
+    
+    tuner = keras_tuner.RandomSearch(
+        hypermodel=build_model,
+        objective="val_accuracy",
+        max_trials=3,
+        executions_per_trial=2,
+        overwrite=True,
+        directory="optimization",
+        project_name="BRNN_CC_Random_optimization",
+    )
+    tuner.search_space_summary()
+    tuner.search(train_set, label_train, epochs=2, validation_data=(test_set, label_test))
+    models = tuner.get_best_models()
+    best_model = models[0]
+    best_model.build(input_shape=(None,12,369))
+    best_model.summary()
+    
+
+    
+    
+    
+
+
